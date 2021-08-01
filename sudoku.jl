@@ -49,29 +49,24 @@ end
 
 
 function valid(board::Array{Int8, 2}, num::Int8, pos::Tuple{Int8, 1})
-    row = pos[1]
-    col = pos[2]
-
-    # Check row
-    for i in 1:9
-        if ((board[row, i] == num) && (col != i))
-            return false
-        end
+    # Check column
+    num_in_col = findall( x -> x == num, board[:pos[2]] )
+    if length(num_in_col) > 0
+        return false
     end
 
-    # Check column
-    for i in 1:9
-        if ((board[i, col] == num) && (row != i))
-            return false
-        end
+    # Check row
+    num_in_row = findall( x -> x == num, board[pos[1]:end] )
+    if length(num_in_row) > 0
+        return false
     end
 
     # Check box
     coordinates = Dict( 1 => 1, 2 => 1, 3 => 1,
                         4 => 4, 5 => 4, 6 => 4,
                         7 => 7, 8 => 7, 9 => 7)
-    box = board[coordinates[row]:(coordinates[row]+2),
-          coordinates[col]:(coordinates[col]+2)]
+    box = board[coordinates[pos[1]]:(coordinates[pos[1]]+2),
+          coordinates[pos[2]]:(coordinates[pos[2]]+2)]
     num_in_box = findall( x -> x == num, box )
 
     if length(num_in_box) > 0
