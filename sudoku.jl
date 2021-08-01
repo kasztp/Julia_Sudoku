@@ -1,4 +1,5 @@
-using CSV, DataFrames
+using CSV, DataFrames, Dates
+
 
 function load_board(filename)
     board = CSV.read(filename, DataFrame, header = 0) |> Array{Int8, 2}
@@ -6,76 +7,7 @@ function load_board(filename)
 end
 
 
-function solve!(bo::Array{Int8, 2})
-    find = find_empty(bo)
-    if find == (10, 10)
-        return bo
-    else
-        row, col = find
-    end
-    for i in 1:9
-        if valid(bo, i, (row, col))
-            bo[row, col] = i
-
-            if solve(bo)
-                return true
-            end
-            bo[row, col] = 0
-        end
-    end
-    return false
-end
-
-
-function valid(bo::Array{Int8, 2}, num, pos)
-    row = pos[1]
-    col = pos[2]
-    # Check row
-    for i in 1:9
-        if bo[row, i] == num && col != i
-            return false
-        end
-    end
-    # Check column
-    for i in 1:9
-        if bo[i, col] == num && row != i
-            return false
-        end
-    end
-    # Check box
-    box_x = Int8(floor(col / 3))
-    if box_x < 1
-        box_x = 1
-    end
-    box_y = Int8(floor(row / 3))
-    if box_y < 1
-        box_y = 1
-    end
-
-    for i in (box_y*3):(box_y*3 + 3)
-        for j in (box_x * 3):(box_x*3 + 3)
-            if bo[i, j] == num && (i,j) != (col, row)
-                return false
-            end
-        end
-    end
-    return true
-end
-
-
-function find_empty(bo::Array{Int8, 2})
-    for i in 1:9
-        for j in 1:9
-            if bo[i, j] == 0
-                return (i, j)  # row, col
-            end
-        end
-    end
-    return (10,10)
-end
-
-
-function print_board(bo::Array{Int8, 2})
+function print_board(board::Array{Int8, 2})
     for i in 1:9
         if (i-1) % 3 == 0 && i != 0
             println("- - - - - - - - - - - -")
@@ -86,19 +18,88 @@ function print_board(bo::Array{Int8, 2})
                 print(" | ")
             end
             if j == 9
-                println(bo[i, j])
+                println(board[i, j])
             else
-                print("$(bo[i, j]) ")
+                print("$(board[i, j]) ")
             end
         end
     end
 end
 
 
+function solve(board::Array{Int8, 2})
+    find = find_empty(board)
+    if find == (10, 10)
+        return true
+    else
+        row, col = find
+        for i in 1:9
+            if valid(board, i, (row, col))
+                board[row, col] = i
+                if solve(board)
+                    return true
+                else
+                    board[row, col] = 0
+                end
+            end
+        end
+    end
+    return false
+end
+
+
+function valid(board::Array{Int8, 2}, num, pos)
+    row = pos[1]
+    col = pos[2]
+
+    # Check row
+    for i in 1:9
+        if ((board[row, i] == num) && (col != i))
+            return false
+        end
+    end
+
+    # Check column
+    for i in 1:9
+        if ((board[i, col] == num) && (row != i))
+            return false
+        end
+    end
+
+    # Check box
+    coordinates = Dict(1 => 1, 2 => 1, 3 => 1, 4 => 4, 5 => 4, 6 => 4, 7 => 7, 8 => 7, 9 => 7)
+    #box_x = coordinates[col]
+    #box_y = coordinates[row]
+    box = board[coordinates[row]:(coordinates[row]+2),coordinates[col]:(coordinates[col]+2)]
+    num_in_box = findall( x -> x == num, box )
+
+    if length(num_in_box) > 0
+        return false
+    end
+
+    return true
+end
+
+
+function find_empty(board::Array{Int8, 2})
+    for i in 1:9
+        for j in 1:9
+            if board[i, j] == 0
+                return (i, j)  # row, col
+            end
+        end
+    end
+    return (10,10)
+end
+
+
 sudoku = load_board(raw"C:\Users\kaszt\github\Julia_Sudoku\9x9.csv")
-println(sudoku)
-println("\nOriginal:")
+println("\nOriginal:\n")
 print_board(sudoku)
+start_time = Time(Dates.now())
 solve(sudoku)
-println("\nSolved:")
+end_time = Time(Dates.now())
+println("\nSolved:\n")
 print_board(sudoku)
+time_taken = end_time - start_time
+println(Dates.Millisecond(time_taken))
