@@ -67,11 +67,18 @@ function valid(board::Array{Int8, 2}, num, pos)
     end
 
     # Check box
+<<<<<<< HEAD
     coordinates = Dict( 1 => 1, 2 => 1, 3 => 1,
                         4 => 4, 5 => 4, 6 => 4,
                         7 => 7, 8 => 7, 9 => 7)
     box = board[coordinates[row]:(coordinates[row]+2),
           coordinates[col]:(coordinates[col]+2)]
+=======
+    coordinates = Dict(1 => 1, 2 => 1, 3 => 1, 4 => 4, 5 => 4, 6 => 4, 7 => 7, 8 => 7, 9 => 7)
+    #box_x = coordinates[col]
+    #box_y = coordinates[row]
+    box = board[coordinates[row]:(coordinates[row]+2),coordinates[col]:(coordinates[col]+2)]
+>>>>>>> 80c2382d64fefab3fd55daa2559add8afd1bc764
     num_in_box = findall( x -> x == num, box )
 
     if length(num_in_box) > 0
